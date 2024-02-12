@@ -13,6 +13,7 @@ solution: Решение системы уравнений, возвращаем
 
 import numpy as np
 
+
 def gaussian_elimination(A, B):
     augmented_matrix = np.hstack((A, B))
     n, m = augmented_matrix.shape
@@ -23,6 +24,10 @@ def gaussian_elimination(A, B):
 
     for i in range(n):
         divisor = augmented_matrix[i, i]
+
+        if divisor == 0:
+            # Строка не может быть нормализована, проверяем дальше
+            continue
 
         augmented_matrix[i, :] /= divisor
 
@@ -38,6 +43,18 @@ def gaussian_elimination(A, B):
             print(augmented_matrix)
             print()
 
+    # Проверка на бесконечное число решений или отсутствие решений
+    infinite_solutions = False
+    for i in range(n):
+        if np.all(augmented_matrix[i, :-1] == 0) and augmented_matrix[i, -1] != 0:
+            # Система несовместна
+            print("Система уравнений несовместна и не имеет решений.")
+            return None
+        elif np.all(augmented_matrix[i, :-1] == 0) and augmented_matrix[i, -1] == 0:
+            # Система имеет бесконечно много решений
+            infinite_solutions = True
+            break
+
     x = np.zeros(n)
 
     for i in range(n - 1, -1, -1):
@@ -46,7 +63,12 @@ def gaussian_elimination(A, B):
         for j in range(i + 1, n):
             x[i] -= augmented_matrix[i, j] * x[j]
 
-    return x
+    if infinite_solutions:
+        print("Система уравнений имеет бесконечно много решений.")
+        return x, True
+    else:
+        print("Система уравнений имеет единственное решение.")
+        return x, False
 
 
 def main():
@@ -67,12 +89,16 @@ def main():
         B[i, 0] = float(input())
 
     # Вызов функции gaussian_elimination для решения системы уравнений.
-    solution = gaussian_elimination(A, B)
+    solution, has_infinite_solutions = gaussian_elimination(A, B)
 
     # Вывод решения системы уравнений.
-    print("\nРешение системы:")
-    for i, val in enumerate(solution):
-        print(f"x{i + 1} =", val)
+    if solution is not None:
+        print("\nРешение системы:")
+        for i, val in enumerate(solution):
+            print(f"x{i + 1} =", val)
+        if has_infinite_solutions:
+            print("Обратите внимание, что система имеет бесконечно много решений.")
+
 
 if __name__ == "__main__":
     main()
